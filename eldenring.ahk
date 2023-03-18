@@ -32,56 +32,21 @@ if (!FileExist(BackupDir))
 
 SetWorkingDir, %BackupDir%
 
-; Save Hotkey. Change 'F6' to the Key of your choice.
-; This hotkey will create a new save in the current run, and select it.
-~F6::
+; Save Hotkey. Change 'F5' to the Key of your choice.
+; This hotkey will overwrite a last Backup Save File in the current run, and select it.
+~F5::
 {
-    ; Execute function only when ER window is active
-    if (!IsEldenRingWindowActive())
-        return
-
-    if (!FileExist(SaveFile)) {
-        MsgBox, Elden Ring Save File doesn't exist:`n`n%SaveFile%
-        return
-    }
-
-    ; Quit, if Backup Folder doesn't exist
-    if (!FileExist(BackupDir)) {
-        MsgBox, Backup Folder doesn't exist:`n`n%BackupDir%
-        return
-    }
-
-    ; Read and Write Index from .index file
-    file := FileOpen(IndexFile, "rw", "UTF-8-RAW")
-    if (!IsObject(file)) {
-        MsgBox, Can't open Index File for rw.`n`n%IndexFile%
-        return
-    }
-    ; Set hidden attribute for a Index File
-    FileGetAttrib, IndexFileAttrs, %IndexFile%
-    if (!InStr(IndexFileAttrs, "H", true))
-        FileSetAttrib, +H, %IndexFile%
-
-    Index := file.Read(20)
-    Index := Index ? Index : 0
-    ++Index
-    file.Pos := 0
-    file.Length := 0
-    file.Write(Index)
-    file.Close()
-
-    ; Create Backup File by Index variable
-    bakFileName := Index . "_" . SaveFileName
-    FileCopy, %SaveFile%, %bakFileName%, 1
-
+    CreateSave(false)
     return
-
-    ; Errors Shorcut Code
-    ;~ MsgBox, %ErrorLevel%
-    ;~ MsgBox, %A_LastError%
-    ;~ return
 }
 
+; Save Hotkey. Change 'F6' to the Key of your choice.
+; This hotkey will create a new Backup Save File in the current run, and select it.
+~F6::
+{
+    CreateSave(true)
+    return
+}
 
 ; Load Hotkey. Change 'F8'to the key of your choice.
 ; This hotkey loads the last save selected, or last save created - whichever is most recent.
@@ -161,6 +126,60 @@ IsEldenRingWindowActive()
         return true
 
     return false
+}
+
+CreateSave(OverwriteLastSave)
+{
+    global Index
+    global SaveFile, BackupDir, IndexFile, SaveFileName
+
+    ; Execute function only when ER window is active
+    if (!IsEldenRingWindowActive())
+        return
+
+    if (!FileExist(SaveFile)) {
+        MsgBox, Elden Ring Save File doesn't exist:`n`n%SaveFile%
+        return
+    }
+
+    ; Quit, if Backup Folder doesn't exist
+    if (!FileExist(BackupDir)) {
+        MsgBox, Backup Folder doesn't exist:`n`n%BackupDir%
+        return
+    }
+
+    ; Read and Write Index from .index file
+    file := FileOpen(IndexFile, "rw", "UTF-8-RAW")
+    if (!IsObject(file)) {
+        MsgBox, Can't open Index File for rw.`n`n%IndexFile%
+        return
+    }
+    ; Set hidden attribute for a Index File
+    FileGetAttrib, IndexFileAttrs, %IndexFile%
+    if (!InStr(IndexFileAttrs, "H", true))
+        FileSetAttrib, +H, %IndexFile%
+
+    Index := file.Read(20)
+    Index := Index ? Index : 0
+    ; Doesn't overwrite a last Backup Save File, instead create a new Backup Save
+    if (!OverwriteLastSave) {
+        ++Index
+        file.Pos := 0
+        file.Length := 0
+        file.Write(Index)
+    }
+    file.Close()
+
+    ; Create Backup Save File by Index variable
+    bakFileName := Index . "_" . SaveFileName
+    FileCopy, %SaveFile%, %bakFileName%, true
+
+    return
+
+    ; Errors Shorcut Code
+    ;~ MsgBox, %ErrorLevel%
+    ;~ MsgBox, %A_LastError%
+    ;~ return
 }
 
 ProcessSuspend(PID_or_Name)
