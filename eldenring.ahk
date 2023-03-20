@@ -1,5 +1,6 @@
 ﻿; Silver Zachara <silver.zachara@gmail.com> 2023
 
+#NoEnv
 #Persistent
 #UseHook On
 #SingleInstance Force
