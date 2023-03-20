@@ -122,13 +122,14 @@ IsEldenRingWindowActive()
     global ERWindowTitle
 
     WinGetActiveTitle, Title
-    ; Case-insensitive compare
+    ; Case-sensitive compare
     if (ERWindowTitle == Title)
         return true
 
     return false
 }
 
+; Create a new Backup Save file
 CreateSave(OverwriteLastSave)
 {
     global Index
