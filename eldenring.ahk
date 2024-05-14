@@ -116,6 +116,13 @@ SetWorkingDir, %BackupDir%
     return
 }
 
+; Exit eldenring.ahk itself
+^!+F4::
+{
+    MsgBox,, Elden Ring, Exiting eldenring.ahk, 1
+    ExitApp
+}
+
 ; Check if ER window is active
 IsEldenRingWindowActive()
 {
